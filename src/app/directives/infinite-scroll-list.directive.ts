@@ -8,37 +8,52 @@ interface ScrollPosition {
     sT: number;
     cH: number;
 };
+
 export interface InfiniteScrollOptions {
+
     // automatically load the first page of data when the component is rendered
     autoLoadFirstPage: boolean;
 
     // percentage of vertical scroll before the next page of data tries to load
     scrollPercent: number;
 
+    // height of the scroll region in pixels
     scrollAreaHeight: number;
+
+    // height of the result row containers
     rowHeight: number;
+
+    // override the optimal minimum calculated page size
+    overridePageSize?: number;
 }
+
 const DEFAULT_SCROLL_POSITION: ScrollPosition = {
     sH: 0,
     sT: 0,
     cH: 0
 };
+
 export enum DataStatus {
     INIT,
     IDLE,
     LOADING,
     EOD
 }
+
 const BROWSER_SCROLL_EVENT = 'scroll';
 
 @Directive({
     selector: '[appInfiniteScroller]',
     exportAs: 'scroller'
 })
-export class InfiniteScrollerDirective
+export class InfiniteScrollListDirective
     implements AfterViewInit, OnDestroy, OnInit {
 
+    status: DataStatus;
+    data = [];
+    
     private directiveEffects: Subscription;
+    private pageSize = -1;
     private pageNumber = 0;
 
     @HostBinding('style.height')
@@ -50,24 +65,15 @@ export class InfiniteScrollerDirective
     @Input()
     options: InfiniteScrollOptions
 
-    status: DataStatus;
-    data = [];
-    optimalPageSize = -1;
 
-    constructor(private elm: ElementRef) {
-
-    }
+    constructor(private elm: ElementRef) { }
 
     ngOnInit(): void {
-        this.optimalPageSize = this.calculateOptimalPageSizeForRenderRegion();
-        this.height = `${this.options.scrollAreaHeight ?? 0}px`;
-    }
+        this.pageSize =
+            this.options.overridePageSize
+            ?? this.calculateOptimalPageSizeForRenderRegion();
 
-    private calculateOptimalPageSizeForRenderRegion() {
-        const visibleItemCountEstimate = this.options.scrollAreaHeight / this.options.rowHeight;
-        let optimalPageSize = 1.1 * visibleItemCountEstimate;
-        optimalPageSize = Math.round(optimalPageSize + Number.EPSILON);
-        return optimalPageSize;
+        this.height = `${this.options.scrollAreaHeight ?? 0}px`;
     }
 
     ngOnDestroy(): void {
@@ -75,13 +81,19 @@ export class InfiniteScrollerDirective
     }
 
     ngAfterViewInit() {
-        debugger;
         const onScrollDown$ = this.getScrollDownEvent$();
 
         this.directiveEffects =
             combineLatest([
-                this.createBehaviorLoadNextPageOnScroll(onScrollDown$)
+                this.createBehaviorLoadNextPageOnScroll$(onScrollDown$)
             ]).subscribe();
+    }
+
+    private calculateOptimalPageSizeForRenderRegion() {
+        const visibleItemCountEstimate = this.options.scrollAreaHeight / this.options.rowHeight;
+        let optimalPageSize = 1.1 * visibleItemCountEstimate;
+        optimalPageSize = Math.round(optimalPageSize + Number.EPSILON);
+        return optimalPageSize;
     }
 
     private getScrollDownEvent$() {
@@ -99,13 +111,12 @@ export class InfiniteScrollerDirective
     private getWindowScrollEvent$() {
         return fromEvent(window.document, BROWSER_SCROLL_EVENT)
             .pipe(
-                map((x: any): ScrollPosition => {
-                    const e = x.target['scrollingElement'];
-
+                map((e: any): ScrollPosition => {
+                    const target = e.target['scrollingElement'];
                     return ({
-                        sH: e.scrollHeight,
-                        sT: e.scrollTop + e.clientHeight,
-                        cH: e.clientHeight
+                        sH: target.scrollHeight,
+                        sT: target.scrollTop + e.target.clientHeight,
+                        cH: target.clientHeight
                     });
                 })
             );
@@ -136,14 +147,14 @@ export class InfiniteScrollerDirective
             )
     }
 
-    private createBehaviorLoadNextPageOnScroll(scrollDownEvent$) {
+    private createBehaviorLoadNextPageOnScroll$(scrollDownEvent$) {
         return this.createScroller(scrollDownEvent$)
             .pipe(
                 tap((e) => { console.log(e) }),
 
                 filter(() => this.status !== DataStatus.EOD),
                 tap(() => { this.status = DataStatus.LOADING; }),
-                exhaustMap(() => this.getNextPageCallback(this.optimalPageSize, this.pageNumber++)),
+                exhaustMap(() => this.getNextPageCallback(this.pageSize, this.pageNumber++)),
                 tap((dataPage) => {
                     this.data.push(...dataPage)
                     this.status = !dataPage.length

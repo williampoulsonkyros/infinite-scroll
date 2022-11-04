@@ -1,21 +1,21 @@
 /* tslint:disable:no-unused-variable */
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { ScrollerContainerComponent } from './scroller-container.component';
+import { InfiniteScrollListComponent } from './infinite-scroll-list.component';
 
-describe('ScrollerContainerComponent', () => {
-  let component: ScrollerContainerComponent;
-  let fixture: ComponentFixture<ScrollerContainerComponent>;
+describe('InfiniteScrollListComponent', () => {
+  let component: InfiniteScrollListComponent;
+  let fixture: ComponentFixture<InfiniteScrollListComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ScrollerContainerComponent]
+      declarations: [InfiniteScrollListComponent]
     })
       .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(ScrollerContainerComponent);
+    fixture = TestBed.createComponent(InfiniteScrollListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,77 +1,41 @@
-
 @import 'base.scss';
 
-.terminal {
-  padding-top: 20px;
-
-  ul {
-    padding: 0;
-  }
-
-  h2.loading-elipsis:after {
-    line-height: 16px;
-    top: -15px;
-    position: relative;
-    color: white;
-    overflow: hidden;
-    display: inline-block;
-    vertical-align: bottom;
-    -webkit-animation: ellipsis steps(4, end) 2000ms infinite;
-    animation: ellipsis steps(4, end) 2000ms infinite;
-    content: "\2026";
-    /* ascii code for the ellipsis character */
-    width: 0px;
-  }
-
-  @keyframes ellipsis {
-    to {
-      width: 19px;
-    }
-  }
-
-  @-webkit-keyframes ellipsis {
-    to {
-      width: 19px;
-    }
-  }
-}
-
-.asdfg {
-  height: 100px;
-  // border: 1px solid black;
-  border-bottom: 1px solid white ;
-}
-
-.gggg {
-  justify-content: center;
+.align-center {
   display: flex;
+  justify-content: center;
   align-items: center;
+  vertical-align: middle;
 }
 
 .content-flex {
   display: flex;
 }
 
-.center {
+
+.terminal {
+  padding-top: 32px;
+
+  ul {
+    padding: 0;
+  }
+}
+
+.infinite-scroll-row-custom-content {
+  display: flex;
   justify-content: center;
-  vertical-align: middle;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid white;
 }
 
 
-
-
-
-.pulse {
-  $c: white;
-  $c1: rgb(150, 0, 0);
-  $c2: white;
-  $c3: white;
-  // $from: black;
-  // $to: scale-color($from, $lightness: -10%);
+.red-loading-pulse {
+  $startColor: white;
+  $endColor: rgb(150, 0, 0);
 
   height: 100%;
   width: 100%;
-  background: linear-gradient(-90deg, $c 0%, $c1 50%);
+  background: linear-gradient(-90deg, $startColor 0%, $endColor 50%);
   background-size: 800% 200%;
   animation: pulse 5.0s ease-in infinite;
 

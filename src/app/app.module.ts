@@ -5,16 +5,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ScrollerContainerComponent } from './components/scroller-container/scroller-container.component';
-import { OnVisibleDirective } from './directives/a.directive';
-import { InfiniteScrollerDirective } from './directives/infinite-scroll.directive';
+import { InfiniteScrollListComponent } from './components/infinite-scroll-list/infinite-scroll-list.component';
+import { InfiniteScrollListDirective } from './directives/infinite-scroll-list.directive';
 
 @NgModule({
   declarations: [
     AppComponent,
-    InfiniteScrollerDirective,
-    OnVisibleDirective,
-    ScrollerContainerComponent
+    InfiniteScrollListDirective,
+    InfiniteScrollListComponent
   ],
   imports: [
     BrowserModule,

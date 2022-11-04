@@ -1,23 +1,16 @@
 <div class="content" role="main">
   <div class="terminal">
 
-    <app-scroller-container 
-    [getNextPageCallback]="scrollCallback" 
-    [scrollAreaHeight]="500"
-    [rowHeight]="900">
+    <app-infinite-scroll-list [getNextPageCallback]="getNextPageCallback" [options]="scrollerOptions">
 
       <ng-template let-dataRow #body>
-        <div class="content-flex asdfg" [style.height]="xg">
+        <div class="infinite-scroll-row-custom-content">
           {{dataRow.title}}
         </div>
       </ng-template>
 
       <ng-template #skeletonLoader>
-        <div class="content-flex asdfg">
-          <div class=" pulse gggg">
-            <h1 class="center ">Loading</h1>
-          </div>
-        </div>
+        <h1 class="red-loading-pulse align-center">Loading</h1>
       </ng-template>
 
       <div class="content-flex center" loader>
@@ -28,7 +21,7 @@
         <h1 eod>END OF DATA</h1>
       </div>
 
-    </app-scroller-container>
+    </app-infinite-scroll-list>
 
   </div>
 
