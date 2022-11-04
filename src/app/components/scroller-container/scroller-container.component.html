@@ -1,0 +1,20 @@
+<div infinite-container appInfiniteScroller #scroller="scroller" [getNextPageCallback]="getNextPageCallback"
+  [options]="scrollerOptions">
+
+  <ng-container *ngFor="let row of scroller.data">
+    <ng-container *ngIf="bodyTemplateRef" [ngTemplateOutlet]="bodyTemplateRef"
+      [ngTemplateOutletContext]="{$implicit:row}">
+    </ng-container>
+  </ng-container>
+
+  <ng-container *ngIf="skeletonLoaderTemplateRef && scroller.status === DataStatus.LOADING">
+    <ng-container *ngFor="let row of [0]" [ngTemplateOutlet]="skeletonLoaderTemplateRef">
+    </ng-container>
+  </ng-container>
+
+  <ng-content select="[loader]" *ngIf="!skeletonLoaderTemplateRef && scroller.status === DataStatus.LOADING">
+  </ng-content>
+
+  <ng-content select="[eod]" *ngIf="scroller.status === DataStatus.EOD"></ng-content>
+
+</div>
