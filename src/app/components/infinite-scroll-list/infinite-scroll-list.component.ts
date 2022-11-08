@@ -1,6 +1,6 @@
-import { AfterViewInit, Component, ContentChild, Input, OnInit, TemplateRef } from '@angular/core';
+import { Component, ContentChild, ElementRef, Input, TemplateRef, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs';
-import { DataStatus as DataStatusRef, InfiniteScrollOptions } from 'src/app/directives/infinite-scroll-list.directive';
+import { DataStatus as DataStatusRef, InfiniteScrollListDirective, InfiniteScrollOptions } from 'src/app/directives/infinite-scroll-list.directive';
 
 const DEFAULT_SCROLL_AREA_HEIGHT = 100
 @Component({
@@ -9,19 +9,24 @@ const DEFAULT_SCROLL_AREA_HEIGHT = 100
   styleUrls: ['./infinite-scroll-list.component.scss'],
   exportAs: 'infinite-scroll'
 })
-export class InfiniteScrollListComponent implements AfterViewInit, OnInit {
+export class InfiniteScrollListComponent {
   DataStatus = DataStatusRef;
 
-  ngOnInit(): void {
-  }
-
-  ngAfterViewInit(): void { }
-
+  @Input() query: any
   @Input() options: InfiniteScrollOptions
+  @Input() getPage: (q: any, pageSize: number, page: number) => Observable<any[]>;
   @Input() enableDebug = false;
-  @Input() getNextPageCallback: (pageSize: number, page: number) => Observable<any[]>;
 
-  @ContentChild('body', { static: false }) bodyTemplateRef: TemplateRef<any>;
-  @ContentChild('skeletonLoader', { static: false }) skeletonLoaderTemplateRef: TemplateRef<any>;
+  // row template
+  @ContentChild('row', { static: false }) rowTemplateRef: TemplateRef<any>;
 
+  // end of data template
+  @ContentChild('eod', { static: false }) eodTemplateRef: TemplateRef<any>;
+
+  // row skeleton loader used when loaderStyle is 'many'
+  @ContentChild('rowSkeleton', { static: false }) rowSkeletonTemplateRef: TemplateRef<any>;
+
+  @ViewChild(InfiniteScrollListDirective) scroller: InfiniteScrollListDirective & ElementRef<InfiniteScrollListDirective>;
+
+  
 }

@@ -1,14 +1,13 @@
 
 import { AfterViewInit, Directive, ElementRef, HostBinding, Input, OnDestroy, OnInit } from '@angular/core';
-import { combineLatest, fromEvent, Observable, Subscription } from 'rxjs';
-import { exhaustMap, filter, map, pairwise, startWith, tap } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, firstValueFrom, fromEvent, Observable, range, Subscription } from 'rxjs';
+import { exhaustMap, filter, map, pairwise, startWith, take, tap, toArray } from 'rxjs/operators';
 
 interface ScrollPosition {
     sH: number;
     sT: number;
     cH: number;
-};
-
+};  
 export interface InfiniteScrollOptions {
 
     // automatically load the first page of data when the component is rendered
@@ -25,6 +24,15 @@ export interface InfiniteScrollOptions {
 
     // override the optimal minimum calculated page size
     overridePageSize?: number;
+
+    // output log to console
+    enableLog?: boolean
+
+    // one loader or many
+    loaderStyle: 'single' | 'many'
+
+    // hide the scroll bar in the container
+    hideScrollbar?: boolean
 }
 
 const DEFAULT_SCROLL_POSITION: ScrollPosition = {
@@ -48,32 +56,60 @@ const BROWSER_SCROLL_EVENT = 'scroll';
 })
 export class InfiniteScrollListDirective
     implements AfterViewInit, OnDestroy, OnInit {
-
+    clearCount: 0;
     status: DataStatus;
     data = [];
-    
+    skeletons = []
+
+    sb = new BehaviorSubject<any>(null);
+
     private directiveEffects: Subscription;
-    private pageSize = -1;
+    private pageSize = 0;
     private pageNumber = 0;
 
     @HostBinding('style.height')
     height: string = '0px';
 
-    @Input()
-    getNextPageCallback: (pageSize: number, page: number) => Observable<any[]>;
+    // @HostBinding('style.width')
+    // width: string = '0px';
 
-    @Input()
-    options: InfiniteScrollOptions
 
+    @Input() getPage: (q: any, pageSize: number, page: number) => Observable<any[]>;
+    @Input()
+    public get query(): any {
+        return this._query;
+    }
+    public set query(value: any) {
+        this._query = value;
+        this.clear();
+    }
+    private _query: any;
+    @Input() options: InfiniteScrollOptions
 
     constructor(private elm: ElementRef) { }
 
-    ngOnInit(): void {
+    clear() {
+        this.data = [];
+        this.pageNumber = 0;
+        this.status = DataStatus.IDLE;
+        this.sb.next(this.clearCount++)
+    }
+
+    top() {
+        this.elm.nativeElement.scrollTop = 0;
+    }
+
+    async ngOnInit(): Promise<void> {
         this.pageSize =
             this.options.overridePageSize
             ?? this.calculateOptimalPageSizeForRenderRegion();
 
         this.height = `${this.options.scrollAreaHeight ?? 0}px`;
+        this.skeletons = await this.createSkeletons();
+    }
+
+    private async createSkeletons(): Promise<number[]> {
+        return await firstValueFrom(range(0, this.pageSize).pipe(take(this.pageSize / 2), toArray()));
     }
 
     ngOnDestroy(): void {
@@ -95,6 +131,8 @@ export class InfiniteScrollListDirective
         optimalPageSize = Math.round(optimalPageSize + Number.EPSILON);
         return optimalPageSize;
     }
+
+
 
     private getScrollDownEvent$() {
         const useScrollContainer = this.options.scrollAreaHeight > 0;
@@ -139,7 +177,7 @@ export class InfiniteScrollListDirective
         return scrollEvent$
             .pipe(
                 pairwise(),
-                tap(v => { console.log(v[1]) }),
+                tap(v => { this.log(v[1]) }),
                 filter(positions => [
                     this.isUserScrollingDown(positions),
                     this.isScrollExpectedPercent(positions[1])
@@ -148,18 +186,34 @@ export class InfiniteScrollListDirective
     }
 
     private createBehaviorLoadNextPageOnScroll$(scrollDownEvent$) {
-        return this.createScroller(scrollDownEvent$)
-            .pipe(
-                tap((e) => { console.log(e) }),
 
+
+        return combineLatest([this.sb, this.createScroller(scrollDownEvent$)])
+
+            // return this.createScroller(scrollDownEvent$)
+            .pipe(
+                map(([a, b]) => b),
                 filter(() => this.status !== DataStatus.EOD),
-                tap(() => { this.status = DataStatus.LOADING; }),
-                exhaustMap(() => this.getNextPageCallback(this.pageSize, this.pageNumber++)),
+                tap(() => {
+                    this.status = DataStatus.LOADING;
+                    this.log({
+                        status: this.status,
+                        startIndex: this.data.length
+                    });
+                }),
+                exhaustMap(() => this.getPage(this.query, this.pageSize, this.pageNumber++)),
                 tap((dataPage) => {
                     this.data.push(...dataPage)
                     this.status = !dataPage.length
                         ? DataStatus.EOD
                         : DataStatus.IDLE;
+
+                    this.log({
+                        status: this.status,
+                        pageNumber: this.pageNumber,
+                        page: dataPage
+                    });
+
                 })
             )
     }
@@ -176,5 +230,11 @@ export class InfiniteScrollListDirective
         return this.options.autoLoadFirstPage
             ? scrollDownEvent$.pipe(startWith([DEFAULT_SCROLL_POSITION, DEFAULT_SCROLL_POSITION]))
             : scrollDownEvent$;
+    }
+
+    private log(data: any) {
+        if (this.options.enableLog) {
+            console.log('infinite-scroll:', data)
+        }
     }
 }

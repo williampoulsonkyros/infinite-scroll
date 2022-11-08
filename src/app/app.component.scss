@@ -20,12 +20,19 @@
   }
 }
 
+
+.infinite-scroll-row-skeleton-loader {
+  display: flex;
+  height: 150px;
+  width: 100%;
+}
 .infinite-scroll-row-custom-content {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   border-bottom: 1px solid white;
+  height: 150px;
 }
 
 

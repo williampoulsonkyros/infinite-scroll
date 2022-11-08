@@ -1,24 +1,33 @@
-<div infinite-container appInfiniteScroller #scroller="scroller" [getNextPageCallback]="getNextPageCallback"
-  [options]="options">
+<div [class.noScrollBar]="options.hideScrollbar">
+  <div  infinite-container appInfiniteScroller #scroller="scroller" [getPage]="getPage" [options]="options"
+    [query]="query" >
 
-  <div *ngFor="let row of scroller.data" [style.height]="this.options.rowHeight+'px'" [class.debug]="enableDebug"
-    class="infinite-scroll-row-container">
-    <ng-container *ngIf="bodyTemplateRef" [ngTemplateOutlet]="bodyTemplateRef"
-      [ngTemplateOutletContext]="{$implicit:row}">
-    </ng-container>
-  </div>
-
-  <ng-container *ngIf="skeletonLoaderTemplateRef && scroller.status === DataStatus.LOADING">
-    <div [class.debug]="enableDebug" class="infinite-scroll-row-container">
-      <ng-container [ngTemplateOutlet]="skeletonLoaderTemplateRef">
+    <div *ngFor="let row of scroller.data" [class.debug]="enableDebug" class="infinite-scroll-row-container">
+      <ng-container *ngIf="rowTemplateRef" [ngTemplateOutlet]="rowTemplateRef"
+        [ngTemplateOutletContext]="{$implicit:row}">
       </ng-container>
     </div>
-  </ng-container>
 
-  <ng-content select="[loader]" *ngIf="!skeletonLoaderTemplateRef && scroller.status === DataStatus.LOADING">
-  </ng-content>
+    <ng-container [ngSwitch]="this.options.loaderStyle"
+      *ngIf="rowSkeletonTemplateRef && scroller.status === DataStatus.LOADING">
+      <ng-container *ngSwitchCase="'single'">
+        <div [class.debug]="enableDebug">
+          <ng-container [ngTemplateOutlet]="rowSkeletonTemplateRef">
+          </ng-container>
+        </div>
+      </ng-container>
+      <ng-container *ngSwitchCase="'many'">
+        <div [class.debug]="enableDebug">
+          <ng-container [ngTemplateOutlet]="rowSkeletonTemplateRef" *ngFor="let row of scroller.skeletons">
+          </ng-container>
+        </div>
+      </ng-container>
+    </ng-container>
 
-  <ng-content select="[eod]" *ngIf="scroller.status === DataStatus.EOD">
-  </ng-content>
+    <ng-container *ngIf="scroller.status === DataStatus.EOD" [ngTemplateOutlet]="eodTemplateRef"
+      [ngTemplateOutletContext]="{$implicit:scroller}">
+    </ng-container>
+
+  </div>
 
 </div>

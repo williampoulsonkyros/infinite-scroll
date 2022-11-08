@@ -4,12 +4,17 @@
         overflow-x: none;
     }
 
+    .noScrollBar {
+        ::-webkit-scrollbar {
+            width: 0;
+            /* Remove scrollbar space */
+            background: transparent;
+            /* Optional: just make scrollbar invisible */
+        }
+    }
+
     .debug {
         border: 1px dotted green;
         background-color: rgba(0, 128, 0, 0.5);
-    }
-
-    .infinite-scroll-row-container {
-        display: flex;
     }
 }

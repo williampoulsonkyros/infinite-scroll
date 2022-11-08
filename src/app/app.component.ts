@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { delay, map, of, range, tap, toArray } from 'rxjs';
+import { AfterViewInit, Component, QueryList, ViewChildren } from '@angular/core';
+import { delay, map, of, range, toArray } from 'rxjs';
+import { InfiniteScrollListComponent } from './components/infinite-scroll-list/infinite-scroll-list.component';
 import { InfiniteScrollOptions } from './directives/infinite-scroll-list.directive';
 
 @Component({
@@ -7,32 +8,40 @@ import { InfiniteScrollOptions } from './directives/infinite-scroll-list.directi
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
+
+  ngAfterViewInit(): void {
+  }
 
   title = 'infinite-scroll';
   lastResultIndex = 0;
 
+  queryText: string;
+  @ViewChildren(InfiniteScrollListComponent) scrollers: QueryList<InfiniteScrollListComponent>
+
   scrollerOptions: InfiniteScrollOptions = {
     autoLoadFirstPage: true,
-    scrollPercent: 100,
-    scrollAreaHeight: 500,
+    scrollPercent: 70,
+    scrollAreaHeight: 800,
     rowHeight: 100,
-    overridePageSize: 50
+    overridePageSize: 50,
+    enableLog: true,
+    loaderStyle: 'single',
+    hideScrollbar: true
   }
 
+  ddd(q) {
+    this.lastResultIndex = 0;
+    this.queryText = q;
+  }
 
-  getNextPageCallback = (pageSize: number, page: number) => {
-    console.log({ pageSize, page });  
-
-    if (this.lastResultIndex > 150) {
-      console.log(`scroll datasource EOD`)
-      return of([]).pipe(delay(3000))
+  getNextPageCallback = (q: any, pageSize: number, page: number) => {
+    if (this.lastResultIndex > 500) {
+      return of([])
     }
-
     return range(this.lastResultIndex, pageSize)
       .pipe(
-        tap(v => { console.log(`loading page starting at item ${this.lastResultIndex}`); }),
-        delay(3000),
+        delay(2000),
         map(i => { return ({ title: `Title - ${this.lastResultIndex++}` }); }),
         toArray(),
       )
