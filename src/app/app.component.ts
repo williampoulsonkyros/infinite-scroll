@@ -1,22 +1,25 @@
-import { AfterViewInit, Component, QueryList, ViewChildren } from '@angular/core';
+import { Component, QueryList, ViewChildren } from '@angular/core';
 import { delay, map, of, range, toArray } from 'rxjs';
-import { InfiniteScrollListComponent } from './components/infinite-scroll-list/infinite-scroll-list.component';
-import { InfiniteScrollOptions } from './directives/infinite-scroll-list.directive';
+import { InfiniteScrollListComponent, InfiniteScrollOptions } from './components/infinite-scroll-list/infinite-scroll-list.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements AfterViewInit {
-
-  ngAfterViewInit(): void {
-  }
+export class AppComponent {
 
   title = 'infinite-scroll';
   lastResultIndex = 0;
-
-  queryText: string;
+  private _queryText: string;
+  public get queryText(): string {
+    return this._queryText;
+  }
+  public set queryText(value: string) {
+    this._queryText = value;
+    this.lastResultIndex = 0;
+  }
+  
   @ViewChildren(InfiniteScrollListComponent) scrollers: QueryList<InfiniteScrollListComponent>
 
   scrollerOptions: InfiniteScrollOptions = {
@@ -30,11 +33,6 @@ export class AppComponent implements AfterViewInit {
     hideScrollbar: true
   }
 
-  ddd(q) {
-    this.lastResultIndex = 0;
-    this.queryText = q;
-  }
-
   getNextPageCallback = (q: any, pageSize: number, page: number) => {
     if (this.lastResultIndex > 500) {
       return of([])
@@ -46,6 +44,5 @@ export class AppComponent implements AfterViewInit {
         toArray(),
       )
   }
-
 
 }

@@ -6,12 +6,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { InfiniteScrollListComponent } from './components/infinite-scroll-list/infinite-scroll-list.component';
-import { InfiniteScrollListDirective } from './directives/infinite-scroll-list.directive';
 
 @NgModule({
   declarations: [
     AppComponent,
-    InfiniteScrollListDirective,
     InfiniteScrollListComponent
   ],
   imports: [

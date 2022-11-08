@@ -1,13 +1,12 @@
 <div class="content" role="main">
 
-  <input type="text" #queryInput (keyup.enter)="ddd(queryInput.value)">
+  <input type="text" #queryInput (keyup.enter)="queryText=queryInput.value">
 
   <div class="terminal">
-    
-    <app-infinite-scroll-list [getPage]="getNextPageCallback" [options]="scrollerOptions" [query]="{queryText}">
 
+    <app-infinite-scroll-list [getPage]="getNextPageCallback" [options]="scrollerOptions" [query]="{queryText}">
       <ng-template let-row #row>
-        <div class="infinite-scroll-row-custom-content">
+        <div class="infinite-scroll-row-custom-content ">
           {{row.title}}
         </div>
       </ng-template>
@@ -21,14 +20,13 @@
       </ng-template>
 
       <ng-template let-scroller #eod>
-        <div class=" infinite-scroll-row-custom-content align-center" #eod>
+        <div class="infinite-scroll-row-custom-content align-center" #eod>
           <h1 eod>END OF DATA</h1>
-          <button type="button" mat-button disableRipple matSuffix mat-icon-button (click)="scroller.top()">
+          <button type="button" mat-button disableRipple matSuffix mat-icon-button (click)="scroller.goToTop()">
             Back To Top
           </button>
         </div>
       </ng-template>
-
     </app-infinite-scroll-list>
 
   </div>
